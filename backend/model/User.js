@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
     isAdmin: { type: Boolean, default: false },
     age: String,
     avatar: { type: String, default: null },
+    profilePhoto: { type: String, default: null },
     photos: [String],
     frands: [
         {
@@ -29,8 +30,8 @@ const userSchema = new mongoose.Schema({
     ],
     notifications: [
         {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            sender: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+            resiver: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
             notificationMessage: String,
         },
     ],

@@ -40,7 +40,9 @@ app.use(
 
 app.use("/api", require("./router/auth"));
 app.use("/api", require("./router/post"));
+app.use("/api", require("./router/profile"));
+app.use("/api", require("./router/user"));
 
 app.listen(port, () =>
-    console.log(" server is runing on http://localhost" + port)
+    console.log(" server is runing on http://localhost:" + port)
 );

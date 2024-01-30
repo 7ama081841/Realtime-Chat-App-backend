@@ -12,11 +12,9 @@ const regesterUser = async (req, res) => {
         const isEmail = await User.countDocuments({ email: req.body.email });
 
         if (isPassword >= 1) {
-            console.log(isPassword);
             return res.send("User already exists");
         }
         if (isEmail >= 1) {
-            console.log(isEmail);
             return res.send(" User already exists");
         }
 
@@ -40,6 +38,7 @@ const regesterUser = async (req, res) => {
                 .map((detail) => detail.message)
                 .join(", ");
 
+            console.log(errorMessage);
             return res.status(400).json({ error: errorMessage });
         }
 
@@ -51,7 +50,6 @@ const regesterUser = async (req, res) => {
 
         if (req.file) {
             newUser.avatar = `http://localhost:5000/userPhotos/${req.file.filename}`;
-            console.log(newUser);
         }
 
         await newUser.save();
@@ -68,7 +66,7 @@ const regesterUser = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "successduly created",
+            message: "successduly regester",
             data: {
                 token,
                 user,
@@ -141,7 +139,6 @@ const loginUser = async (req, res) => {
             },
         });
     } catch (err) {
-        console.log(err);
         res.status(500).json({ error: err });
     }
 };
