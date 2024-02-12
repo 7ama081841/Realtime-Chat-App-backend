@@ -2,13 +2,29 @@ const User = require("../model/User");
 const Notification = require("../model/notification");
 
 const getusers = async (req, res) => {
+    const { userId } = req.params;
+
     try {
-        const users = await User.find().select("-password -__v ");
+        const OneUser = await User.findById(userId);
+
+        const allUsers = await User.find().select("-password -__v ");
+
+        const filteredUsers = allUsers.filter((user) => {
+            const isFriend =
+                OneUser.frands && OneUser.frands.includes(user._id);
+            const isInvited =
+                OneUser.invitations && OneUser.invitations.includes(user._id);
+
+            const isCurrentUser =
+                OneUser._id.toString() === user._id.toString();
+
+            return !isFriend && !isInvited && !isCurrentUser;
+        });
 
         res.status(200).json({
             success: true,
             message: "successduly geted",
-            users,
+            users: filteredUsers,
         });
     } catch (err) {
         return res.status(500).json(err);
@@ -101,7 +117,6 @@ const cancelinvItation = async (req, res) => {
 const acceptinvItation = async (req, res) => {
     const { senderId, resiverId } = req.body;
 
-    console.log({ senderId, resiverId });
     try {
         const sender = await User.findByIdAndUpdate(
             senderId,
@@ -112,7 +127,57 @@ const acceptinvItation = async (req, res) => {
             { new: true }
         ).exec();
 
-        console.log(sender);
+        const resiver = await User.findByIdAndUpdate(
+            resiverId,
+            {
+                $pull: { pindingFrands: senderId },
+                $push: { frands: senderId },
+            },
+            { new: true }
+        ).exec();
+
+        const newNotification = new Notification({
+            sender: senderId,
+            resiver: resiverId,
+            notificationMessage: "accepted your invitation ",
+        });
+
+        await newNotification.save();
+
+        res.status(200).send("accept a Friend");
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+const rejectInvitation = async (req, res) => {
+    const { senderId, resiverId } = req.body;
+
+    try {
+        const sender = await User.findByIdAndUpdate(
+            senderId,
+            {
+                $pull: { invitasions: resiverId },
+            },
+            { new: true }
+        ).exec();
+
+        const resiver = await User.findByIdAndUpdate(
+            resiverId,
+            {
+                $pull: { pindingFrands: senderId },
+            },
+            { new: true }
+        ).exec();
+
+        const newNotification = new Notification({
+            sender: senderId,
+            resiver: resiverId,
+            notificationMessage: "rejected your invitation ",
+        });
+
+        await newNotification.save();
+
         res.status(200).send("accept a Friend");
     } catch (err) {
         console.log(err);
@@ -124,4 +189,5 @@ module.exports = {
     addFriend,
     cancelinvItation,
     acceptinvItation,
+    rejectInvitation,
 };
